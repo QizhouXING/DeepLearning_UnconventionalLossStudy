@@ -69,6 +69,44 @@ def multiclassleeloss(scores,classes,nb_class):
   final_loss=tf.reduce_mean(l)
   return final_loss
   
+def GLE(scores, classes, nb_class):
+    scores = tf.transpose(scores)
+    classes = tf.transpose(classes)
+    cost = [[1.0 for x in range(nb_class)] for x in range(nb_class)]
+    for i in range(nb_class) :
+        for j in range(nb_class):
+            if i==j:
+                cost[i][j]=0.0
+
+    true_classes = tf.argmax(classes, 0)
+    idx_flattened = tf.range(0, BATCH_SIZE) * scores.get_shape()[0] + tf.cast(true_classes, dtype=tf.int32)
+    true_scores = tf.gather(tf.reshape(tf.transpose(scores), [-1]),
+                            idx_flattened)
+    L = tf.matmul(cost, tf.exp(scores - true_scores))
+    #L = cost * tf.exp(scores - true_scores)
+    #L = tf.exp(scores - true_scores)
+    l = tf.reduce_sum(L, 0)
+    final_loss = tf.reduce_mean(l)
+    return final_loss
+
+def GLL(scores, classes, nb_class):
+    scores = tf.transpose(scores)
+    classes = tf.transpose(classes)
+    cost = [[1.0 for x in range(nb_class)] for x in range(nb_class)]
+    for i in range(nb_class) :
+        for j in range(nb_class):
+            if i==j:
+                cost[i][j]=0.0
+
+    true_classes = tf.argmax(classes, 0)
+    idx_flattened = tf.range(0, BATCH_SIZE) * scores.get_shape()[0] + tf.cast(true_classes, dtype=tf.int32)
+    true_scores = tf.gather(tf.reshape(tf.transpose(scores), [-1]),
+                            idx_flattened)
+    L = tf.matmul(cost, tf.exp(scores - true_scores))
+    l = tf.reduce_sum(L, 0)
+    final_loss = tf.reduce_mean(l)
+    final_loss2 = tf.log(1+final_loss)
+    return final_loss2
 
 #def regularization_loss(lamb,weights):
 #  return lamb*tf.reduce_sum(tf.square(weights)) 
